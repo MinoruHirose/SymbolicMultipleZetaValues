@@ -92,7 +92,8 @@ def get_all_file_names(weight):
 def get_constant_names():
     constant_names = set()
     for weight in range(10,22+1):
-        print(f'{weight=}')
+        # print(f'{weight=}')
+        print(f'weight = {weight}')
         for full_path in get_all_file_names(weight):
             for s_index, s_value in get_list_of_pairs_of_strings_of_index_and_values(full_path):
                 if is_constant_string(s_value):
@@ -110,7 +111,8 @@ def get_list_of_pairs_of_strings_of_index_and_values(full_path):
             assert line[-1]==";"
         elif line[:4]=="Fill":
             if not temp_value_string == "" and  temp_index_string == "":
-                print(f'{temp_value_string=}, {temp_index_string=}')
+                # print(f'{temp_value_string=}, {temp_index_string=}')
+                print(f'temp_value_string = {temp_value_string}, temp_index_string = {temp_index_string}')
                 assert False
 
             l1,l2 = line[5:].split("=")
@@ -150,12 +152,14 @@ def test():
         for weight in range(2,MAX_WEIGHT+1):
             for depth in range(1,weight-1):
                 ret = 0
-                print(f'{weight=}, {depth=}')
+                # print(f'{weight=}, {depth=}')
+                print(f'weight = {weight}, depth = {depth}')
                 for ks in generate_all_index_with_depth(weight, depth):
                     if ks[-1]>1:
                         ret += symbolic_multiple_zeta(ks)
                 assert( ret== symbolic_multiple_zeta(weight))
-                print(f'{time.time()-start=}')
+                # print(f'{time.time()-start=}')
+                print(f'time.time()-start = {time.time()-start}')
     print("Finish test.")
 
 if __name__=="__main__":
