@@ -106,7 +106,7 @@ def get_list_of_pairs_of_strings_of_index_and_values(full_path):
     temp_value_string = ""
     temp_index_string = ""
     for line in open(full_path):
-        line = line.strip()
+        line = line.strip().rstrip("\\")
         if line[:2]=="S\t":
             assert line[-1]==";"
         elif line[:4]=="Fill":
