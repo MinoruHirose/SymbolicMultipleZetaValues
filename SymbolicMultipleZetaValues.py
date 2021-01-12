@@ -138,6 +138,13 @@ def is_constant_string(value_string):
 def get_dual_string(s):
     return s[::-1].replace("0","x").replace("1","0").replace("x","1")
 
+def print_all_found_filenames():
+    print("----------Program found following files--------")
+    for weight in range(10,MAX_WEIGHT+1):
+        for s in sorted( get_all_file_names(weight) ):
+            print(s)
+    print("--------------------------------------------")
+
 def test():
     print("Test ....")
     if 1:
