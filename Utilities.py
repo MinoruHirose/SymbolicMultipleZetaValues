@@ -473,6 +473,58 @@ def t_adic_symmetric_multiple_zeta_at_degree(ks, degree, regularization):
         return (-1)**l*sum( b(ks,ls) * reg_mzv(componentwise_sum(ks,ls)) for ls in generate_all_index_admit_zero(weight = l, depth = len(ks)) )
     return sum( reg_mzv(ks[:i]) * mzv_sub(ks[i:][::-1],degree) * (-1)**(sum(ks[i:])+degree)  for i in range(0, len(ks)+1))
 
+def star_index(ks):
+    r"""
+    Description:
+
+        Calculate star index of inputs
+
+    Input:
+
+        ks - tuple of integers, index
+
+    Output:
+
+        FormalSum of tuple of integers, sum of all index which can be obtained by changing some commas of ks to plus.
+
+    Examples::
+        sage: ks = (3,4)
+        sage: expected = lift_to_fs((3,4)) + lift_to_fs((7,))
+        sage: star_index(ks)==expected
+        True
+
+    """
+    def rec(ls):
+        if len(ls)<=1:
+            return [ls]
+        return [ls[:1]+seq for seq in rec(ls[1:])] + rec((ls[0]+ls[1],) + ls[2:])
+    ks = tuple(ks)
+    return FormalSum([(1,seq) for seq in rec(ks)])
+    pass
+
+def multiple_zeta_star(ks):
+    r"""
+    Description:
+
+        Calculate multiple zeta star value of inputs
+
+    Input:
+
+        ks - tuple of integers, index
+
+    Output:
+
+        multiple zeta, multiple zeta star value of input.
+
+    Examples::
+        sage: multiple_zeta_star((3,5)) == multiple_zeta((3,5)) + multiple_zeta((8,))
+        True
+        sage: multiple_zeta_star((1,1,1,2)) == 4*multiple_zeta((5,))
+        True
+
+    """
+    return sum(c*multiple_zeta(ls) for c,ls in star_index(ks))
+
 
 def mono_dual(ks):
     assert type(ks)==list
