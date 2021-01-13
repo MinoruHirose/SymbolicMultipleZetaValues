@@ -16,27 +16,6 @@ def powerset(seq, m):
 def multiple_zeta(*ks):
     return SymbolicMultipleZetaValues.symbolic_multiple_zeta(*ks)
 
-# For Memorization
-import functools
-global_memo = {}
-def memorize(func):
-    def lift_to_fs(v):
-        return FormalSum([(1,v)])
-    name = func.__name__
-    global_memo[name] = {}
-    memo = global_memo[name]
-    @functools.wraps(func)
-    def wrapper(*args, **kwags):
-        new_args = tuple( tuple(arg) if type(arg)==list else  arg for arg in args)
-        key = str(new_args)
-        if key in memo:
-            return memo[key]
-        res = func(*args, **kwags)
-        memo[key] = res
-        return res
-    return wrapper
-
-
 # For FormalSum
 def lift_to_fs(v):
     return FormalSum([(1,v)])
