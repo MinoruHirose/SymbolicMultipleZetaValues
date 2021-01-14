@@ -1,7 +1,7 @@
 
 
 import sys, os
-# in my environment, sagemath doctest fails to import SymbolicMultipleZetaValues
+# in my environment, without following codes, sagemath doctest fails to import SymbolicMultipleZetaValues
 if os.getcwd() not in sys.path:
     sys.path.append(os.getcwd())
 import SymbolicMultipleZetaValues
