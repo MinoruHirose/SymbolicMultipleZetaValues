@@ -2,9 +2,11 @@
 SageMath library for symbolic calculation of multiple zeta values using Data Mine table.
 
 # Description
-This is a SageMath library for symbolic calculation
+This is a SageMath library for symbolic calculation of multiple zeta values.
 
 # Usage
+
+本プログラムは、SageMathのためのライブラリです。
 
 次のページから、必要なweightに応じて必要なファイルをダウンロードしてください:
 https://www.nikhef.nl/~form/datamine/mzv/complete/complete.html
@@ -25,6 +27,5 @@ https://www.nikhef.nl/~form/datamine/mzv/complete/complete.html
 - mzv21.tar
 - mzv22.tar
 
-ダウンロードしたファイルを解凍し、 スクリプト (SymbolicMultipleZetaValues.py) と同じ場所、もしくはサブフォルダー以下においてください。
-
-Todo.
+ダウンロードしたファイルのうち拡張子が .h .prc 以外のファイルは全て展開してください。展開したファイルについても同様のことを繰り返し、得られたファイル(拡張子が .h もしくは .prc のファイル)を
+スクリプト (SymbolicMultipleZetaValues.py) と同じ場所、もしくはサブフォルダー以下においてください。もしくは、SymbolicMultipleZetaValues.pyを適切に編集してください。
