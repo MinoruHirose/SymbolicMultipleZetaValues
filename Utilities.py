@@ -8,7 +8,7 @@ import SymbolicMultipleZetaValues
 import functools
 import itertools
 from functools import lru_cache
-from sage.all import RealField, mul, FormalSum
+from sage.all import RealField, mul, FormalSum,PolynomialRing, Integer
 
 def powerset(seq, m):
     return [ list(u) for u in itertools.product(*([seq]*m) ) ]
@@ -204,7 +204,7 @@ def HarmonicStarProduct(ks,ls):
             Concatenate((ks[0]+ls[0],), self(ks[1:],ls[1:]))
 
 @LiftFormalSum(FormalSum(0))
-def HarmonicRegularization(ks):
+def HarmonicRegularization(ks, T = 0):
     r"""
     Description:
 
@@ -213,6 +213,7 @@ def HarmonicRegularization(ks):
     Input:
 
         ks - tuple of integers
+        T -
 
     Output:
 
@@ -222,17 +223,32 @@ def HarmonicRegularization(ks):
         sage: HarmonicRegularization((1, 1))
         -1/2*(2,)
 
+        sage: T = PolynomialRing(QQ, "T").gen(0)
+        sage: HarmonicRegularization((1, 1), T = T)
+        -1/2*(2,) + 1/2*T^2*()
+
+        sage: T = PolynomialRing(QQ, "T").gen(0)
+        sage: HarmonicRegularization((2, 1), T = T)
+        -(1, 2) - (3,) + T*(2,)
+
         sage: HarmonicRegularization((1, 3, 5))
         (1, 3, 5)
         sage: HarmonicRegularization(harmonic_product((1,),(3,5,1)))
         0
+
+        sage: U = PolynomialRing(QQ, "U").gen(0)
+        sage: HarmonicRegularization(harmonic_product((1,),(1,3,5)), T = U)
+        U*(1, 3, 5)
     """
     num_of_ones_at_end = len(ks) - min(s for s in range(len(ks)+1) if all(k==1 for k in ks[s:]) )
     if num_of_ones_at_end == 0:
         return lift_to_fs(ks)
     else:
         val = lift_to_fs(ks) - Integer(1) / num_of_ones_at_end * harmonic_product(ks[:-1],ks[-1:])
-        return HarmonicRegularization(val)
+        res = HarmonicRegularization(val, T=T)
+        if T!=0:
+            res += T * HarmonicRegularization(ks[:-1], T=T) / num_of_ones_at_end
+        return res
 
 
 def generate_all_index(weight):
@@ -398,7 +414,7 @@ def shuffle_regularized_multiple_zeta(ks):
 
 @LiftFormalSum( zero=multiple_zeta(2)-multiple_zeta(2) )
 @lru_cache()
-def harmonic_regularized_multiple_zeta(ks):
+def harmonic_regularized_multiple_zeta(ks, T = 0):
     r"""
     Description:
 
@@ -418,8 +434,35 @@ def harmonic_regularized_multiple_zeta(ks):
 
         sage: harmonic_regularized_multiple_zeta( harmonic_product((1,),(3,4) ) )
         0
+
+        sage: R = multiple_zeta(2).parent()
+        sage: T = PolynomialRing(R, "T").gen(0)
+        sage: harmonic_regularized_multiple_zeta( (2, 1), T = T )
+        z2*T - 2*z3
     """
-    return sum( c*multiple_zeta(*ls) for c,ls in HarmonicRegularization(ks) )
+    return sum( c*multiple_zeta(*ls) for c,ls in HarmonicRegularization(ks, T=T) )
+
+@LiftFormalSum( zero=multiple_zeta(2)-multiple_zeta(2) )
+@lru_cache()
+def harmonic_regularized_multiple_zeta_star(ks, T = 0):
+    r"""
+    Description:
+
+        Calculate harmonic regularized multiple zeta star values
+
+    Input:
+
+        ks - tuple of integers
+
+    Output:
+
+        multiple zeta
+
+    Examples::
+        sage: harmonic_regularized_multiple_zeta_star((1,3)) == harmonic_regularized_multiple_zeta((1,3)) + harmonic_regularized_multiple_zeta((4,))
+        True
+    """
+    return sum( c*harmonic_regularized_multiple_zeta(ls, T=T) for c,ls in star_index(ks) )
 
 def regularized_multiple_zeta(ks, regularization):
     if regularization=="shuffle":
@@ -524,6 +567,68 @@ def multiple_zeta_star(ks):
 
     """
     return sum(c*multiple_zeta(ls) for c,ls in star_index(ks))
+
+def polynomial_multiple_zeta(ks, x = None, y = None, T = None):
+    r"""
+    Description:
+
+        Calculate (harmonic regularized) polynomial multiple zeta value f inputs
+        see https://arxiv.org/pdf/1808.06745.pdf for detail.
+
+    Input:
+
+        ks - tuple of integers, index
+
+    Output:
+
+        x,y,T polynomial of multiple zetas, polynomial multiple zeta value of inputs of input.
+
+    Examples::
+        sage: ks = (3,4,5)
+        sage: polynomial_multiple_zeta(ks, x=1, y=0) == multiple_zeta(ks)
+        True
+    """
+    default_x,default_y,default_T = PolynomialRing(multiple_zeta(2).parent(), "x,y,T").gens()
+    if x==None:
+        x = default_x
+    if y==None:
+        y = default_y
+    if T==None:
+        T = default_T
+
+    r = len(ks)
+    return sum(x**sum(ks[:i])*y**sum(ks[i:])*harmonic_regularized_multiple_zeta(ks[:i],T=T)*harmonic_regularized_multiple_zeta(ks[i:][::-1],T=T) for i in range(r+1))
+
+def polynomial_multiple_zeta_star(ks, x = None, y = None, T = None):
+    r"""
+    Description:
+
+        Calculate (harmonic regularized) polynomial multiple zeta value f inputs
+        see https://arxiv.org/pdf/1808.06745.pdf for detail.
+
+    Input:
+
+        ks - tuple of integers, index
+
+    Output:
+
+        x,y,T polynomial of multiple zetas, polynomial multiple zeta value of inputs of input.
+
+    Examples::
+        sage: ks = (3,4,5)
+        sage: polynomial_multiple_zeta_star(ks, x=1, y=0) == multiple_zeta_star(ks)
+        True
+    """
+    default_x,default_y,default_T = PolynomialRing(multiple_zeta(2).parent(), "x,y,T").gens()
+    if x==None:
+        x = default_x
+    if y==None:
+        y = default_y
+    if T==None:
+        T = default_T
+
+    r = len(ks)
+    return sum(x**sum(ks[:i])*y**sum(ks[i:])*harmonic_regularized_multiple_zeta_star(ks[:i],T=T)*harmonic_regularized_multiple_zeta_star(ks[i:][::-1],T=T) for i in range(r+1))
 
 
 def mono_dual(ks):
