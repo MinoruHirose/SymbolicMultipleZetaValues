@@ -8,7 +8,7 @@ import SymbolicMultipleZetaValues
 import functools
 import itertools
 from functools import lru_cache
-from sage.all import RealField, mul, FormalSum,PolynomialRing, Integer, factorial
+from sage.all import *
 
 def powerset(seq, m):
     return [ list(u) for u in itertools.product(*([seq]*m) ) ]
