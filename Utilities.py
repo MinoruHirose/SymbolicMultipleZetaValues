@@ -8,7 +8,7 @@ import SymbolicMultipleZetaValues
 import functools
 import itertools
 from functools import lru_cache
-from sage.all import RealField, mul, FormalSum,PolynomialRing, Integer
+from sage.all import RealField, mul, FormalSum,PolynomialRing, Integer, factorial
 
 def powerset(seq, m):
     return [ list(u) for u in itertools.product(*([seq]*m) ) ]
@@ -333,7 +333,7 @@ def shuffle_product_of_word(word_1,word_2):
 
 @LiftFormalSum(FormalSum(0))
 @lru_cache()
-def shuffle_regularization_of_word(word):
+def shuffle_regularization_of_word(word, X = 0, Y = 0):
     r"""
     Description:
 
@@ -354,6 +354,11 @@ def shuffle_regularization_of_word(word):
         0
         sage: shuffle_regularization_of_word( shuffle_product_of_word("y","yx") )
         0
+        sage: X,Y = PolynomialRing(QQ, "tX,tY").gens()
+        sage: shuffle_regularization_of_word("xy", X=X, Y=Y)
+        -yx + tX*tY
+        sage: shuffle_regularization_of_word("xxx", X=X, Y=Y)
+        1/6*tX^3
     """
     assert all(c=="x" or c=="y" for c in word)
     l = 0
@@ -365,7 +370,12 @@ def shuffle_regularization_of_word(word):
     if l==0 and r==len(word):
         return lift_to_fs(word)
     term = shuffle_product_of_word( shuffle_product_of_word(word[:l], word[l:r]), word[r:] )
-    return FormalSum(0)+shuffle_regularization_of_word( lift_to_fs(word)-term )
+    res = shuffle_regularization_of_word( lift_to_fs(word)-term, X=X, Y=Y )
+    if X!=0 or Y!=0:
+        nl = l
+        nr = len(word) - r
+        res += X**nl * Y**nr/factorial(nl) /factorial(nr) * lift_to_fs( word[l:r] )
+    return res
 
 def word_from_index(ks):
     return "".join("y"+"x"*(k-1) for k in ks)
@@ -411,6 +421,41 @@ def shuffle_regularized_multiple_zeta(ks):
         0
     """
     return sum( c*multiple_zeta(*ls) for c,ls in shuffle_regularization_of_index(ks) )
+
+@LiftFormalSum(zero=multiple_zeta(2)-multiple_zeta(2))
+@lru_cache()
+def shuffle_regularized_multiple_zeta_of_word(word, X = 0, Y=0):
+    r"""
+    Description:
+
+        Calculate shuffle regularized multiple zeta values of given word
+
+    Input:
+
+        word - (usual or Formal sum of) string
+
+    Output:
+
+        multiple zeta
+
+    Examples::
+        sage: shuffle_regularized_multiple_zeta_of_word("yx")
+        z2
+
+        sage: X,Y = PolynomialRing(multiple_zeta(2).parent(), "X,Y").gens()
+        sage: shuffle_regularized_multiple_zeta_of_word("xy", X=X, Y=Y)
+        X*Y - z2
+
+        sage: X,Y = PolynomialRing(multiple_zeta(2).parent(), "X,Y").gens()
+        sage: shuffle_regularized_multiple_zeta_of_word("yxy", X=X, Y=Y)
+        z2*Y - 2*z3
+
+        sage: X,Y = PolynomialRing(multiple_zeta(2).parent(), "X,Y").gens()
+        sage: shuffle_regularized_multiple_zeta_of_word("xxx", X=X, Y=Y)
+        1/6*X^3
+
+    """
+    return sum( c*multiple_zeta(index_from_word(ls)) for c,ls in shuffle_regularization_of_word(word, X=X, Y=Y) )
 
 @LiftFormalSum( zero=multiple_zeta(2)-multiple_zeta(2) )
 @lru_cache()
@@ -629,6 +674,66 @@ def polynomial_multiple_zeta_star(ks, x = None, y = None, T = None):
 
     r = len(ks)
     return sum(x**sum(ks[:i])*y**sum(ks[i:])*harmonic_regularized_multiple_zeta_star(ks[:i],T=T)*harmonic_regularized_multiple_zeta_star(ks[i:][::-1],T=T) for i in range(r+1))
+
+
+
+def Gamma1(A):
+    r"""
+    Description:
+
+        Calculate Gamma_1(A)
+
+    Input:
+
+        A - varialbe in formal power series ring
+
+    Output:
+
+        value of Gamma_1 function
+
+    Examples::
+        sage: R = multiple_zeta(2).parent()
+        sage: P = PowerSeriesRing(R, "A", default_prec = 5)
+        sage: A = P.gen(0)
+        sage: Gamma1(A)
+        1 + 1/2*z2*A^2 - 1/3*z3*A^3 + 9/40*z2^2*A^4 + O(A^5)
+
+    """
+    prec = A.parent().default_prec()
+    ret = 0
+    for k in range(2,prec):
+        ret += multiple_zeta(k)/k*(-A)**k
+    return exp(ret)
+
+@LiftFormalSum(FormalSum(0))
+@lru_cache()
+def OhnoSum_word(m, word):
+    r"""
+    Description:
+
+        Calculate Ohno sum of word
+
+    Input:
+
+        m - Integer
+        word - sentence of "xy"
+
+    Output:
+
+        FormalSum of sentences of "xy", m-th Ohno sum of word
+
+    Examples::
+        sage: OhnoSum_word(2, "xyxyxx")
+        xyxxxyxx + xyxxyxxx + xyxyxxxx
+    """
+    assert all(c in ["x","y"] for  c in word)
+    ks = [ len(seq) for seq in  word.split("y")]
+    ret = FormalSum([])
+    for es in  generate_all_index_admit_zero(weight = m, depth = len(ks)-1):
+        ls = [k+e for k,e in zip(ks,(0,)+es)]
+        ret += lift_to_fs( "y".join("x"*int(l) for l in ls) )
+    return ret
+
 
 
 def mono_dual(ks):

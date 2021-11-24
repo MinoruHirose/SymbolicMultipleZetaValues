@@ -12,6 +12,7 @@ EXAMPLES::
 
 # If Datamine file is not in the current directory, set dir_name to the location of the data file.
 dir_name  = ""
+dir_name = """/Users/hirose/Desktop/myfile/SageMathData/MZVs"""
 
 MAX_WEIGHT = 22
 
@@ -55,10 +56,10 @@ def symbolic_multiple_zeta(*ks):
     r""""
     Return the symbolic multiple zeta values of inputs
     """
-    if len(ks)==0:
-        return symbolic_multiple_zeta(2) / symbolic_multiple_zeta(2)
     if len(ks)==1 and ( type(ks[0])==list or type(ks[0])==tuple ):
         ks = ks[0]
+    if len(ks)==0:
+        return symbolic_multiple_zeta(2) / symbolic_multiple_zeta(2)
     ks = tuple(ks)
     try:
         weight = max(sum(ks), 10)
