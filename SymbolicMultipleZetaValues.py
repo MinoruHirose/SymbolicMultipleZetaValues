@@ -12,7 +12,6 @@ EXAMPLES::
 
 # If Datamine file is not in the current directory, set dir_name to the location of the data file.
 dir_name  = ""
-dir_name = """/Users/hirose/Desktop/myfile/SageMathData/MZVs"""
 
 MAX_WEIGHT = 22
 
